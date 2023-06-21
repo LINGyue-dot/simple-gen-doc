@@ -16,7 +16,7 @@ const { isDir } = require("./path");
 const dir = "./example";
 const dirPath = path.resolve(__dirname, dir);
 
-const docDir = "./doc";
+const docDir = "../../vitepress/doc";
 const docPath = path.resolve(__dirname, docDir);
 const DocExtension = "md";
 

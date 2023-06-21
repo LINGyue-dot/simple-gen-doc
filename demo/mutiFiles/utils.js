@@ -32,16 +32,6 @@ function consoleInfo(obj) {
 }
 
 /**
- * 将 绝对路径为名称的对象转换为类树结构
- * @example
- * {
- *  '/Users/qianlong/Desktop/code/simple-gen-doc/demo/mutiFiles/example/father.ts:{xxx} ,
- *  '
- * }
- */
-function resolvePathTree(basePath, res) {}
-
-/**
  * fork from https://github.com/silverwind/file-extension/blob/master/file-extension.js
  * @description 对 .d.ts 需做额外处理
  * @param {*} fileName
@@ -54,8 +44,6 @@ function getFileExtension(fileName) {
   var ext = (/[^./\\]*$/.exec(fileName) || [""])[0];
   return ext.toLowerCase();
 }
-
-
 
 module.exports = {
   resolveType,
