@@ -69,7 +69,7 @@ module.exports = function (docs) {
             method.params
               .map((param) => `${param.name}:${param.type}`)
               .join(", ")
-          } ${method.return || " : void"})\n`;
+          } ) ${method.return || " : void"}\n`;
         });
       }
       str += "\n";

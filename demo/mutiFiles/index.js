@@ -1,41 +1,64 @@
-const fs = require("fs");
+const fs = require("fs-extra");
 const parser = require("@babel/parser");
 const traverse = require("@babel/traverse").default;
-const types = require("@babel/types");
-const { resolveType, parseComment, consoleInfo } = require("./utils");
+const path = require("path");
+
+const {
+  resolveType,
+  parseComment,
+  consoleInfo,
+  getFileExtension,
+} = require("./utils");
 const render = require("./render");
 
-const path = require("path");
-const { mkdirIfNotExist } = require("./path");
+const { isDir } = require("./path");
 
 const dir = "./example";
 const dirPath = path.resolve(__dirname, dir);
 
 const docDir = "./doc";
-const docPath = (fileName) => path.resolve(__dirname, docDir, fileName || "");
+const docPath = path.resolve(__dirname, docDir);
+const DocExtension = "md";
 
-const fileMap = new Map();
+const tree = {};
 
-fs.readdir(dirPath, (err, files) => {
-  if (err) {
-    return;
-  }
-
-  files.forEach((file) => {
-    const filePath = path.resolve(dirPath, file);
-    resolveFile(filePath, file);
-  });
-
-  for (let [name, res] of fileMap) {
-    mkdirIfNotExist(docPath());
-    consoleInfo(res);
-    fs.writeFileSync(docPath(name), render(res));
-  }
+resolveDir(dirPath, tree).then(() => {
+  // consoleInfo(tree);
+  fs.emptyDirSync(docPath);
+  genDoc(tree, docPath);
 });
 
-function resolveFile(filePath, fileName) {
+async function resolveDir(dirPath, fatherNode) {
+  const files = fs.readdirSync(dirPath);
+  await Promise.all(
+    files
+      .map((file) => {
+        return async function () {
+          const filePath = path.resolve(dirPath, file);
+          if (await isDir(filePath)) {
+            fatherNode[file] = {
+              isDir: true,
+              absolutePath: filePath,
+              children: {},
+            };
+            await resolveDir(filePath, fatherNode[file].children);
+          } else {
+            fatherNode[file] = {
+              isDir: false,
+              absolutePath: filePath,
+              extension: getFileExtension(file),
+              data: [],
+            };
+            await resolveFile(filePath, fatherNode[file].data);
+          }
+        };
+      })
+      .map((fn) => fn())
+  );
+}
+
+async function resolveFile(filePath, data) {
   const sourceCode = fs.readFileSync(filePath).toString();
-  const res = [];
 
   const ast = parser.parse(sourceCode, {
     sourceType: "unambiguous",
@@ -43,9 +66,8 @@ function resolveFile(filePath, fileName) {
   });
 
   traverse(ast, {
-    // 独立函数解析
     FunctionDeclaration(path, state) {
-      res.push({
+      data.push({
         type: "function",
         name: path.get("id").toString(),
         params: path.get("params").map((paramPath) => {
@@ -73,7 +95,7 @@ function resolveFile(filePath, fileName) {
           path.node.leadingComments &&
           parseComment(path.node.leadingComments[0].value),
       };
-      res.push(classInfo);
+      data.push(classInfo);
 
       path.traverse({
         ClassProperty(path) {
@@ -120,11 +142,20 @@ function resolveFile(filePath, fileName) {
       });
     },
   });
-
-  fileMap.set(fileName, res);
+  // fileMap.set(fileName, res);
 }
 
-// fs.writeFileSync("./temp.md", render(res));
-
-// function 中 函数名相关信息是在 id 中
-// class function 中的函数名相关信息是在 key 中
+function genDoc(tree, prefixPath) {
+  for (const [key, val] of Object.entries(tree)) {
+    if (val.isDir) {
+      const docDirPath = path.resolve(prefixPath, key);
+      fs.ensureDirSync(docDirPath);
+      genDoc(val.children, docDirPath);
+    } else {
+      // TODO redesign
+      const docFileName = key.replace(`.${val.extension}`, `.${DocExtension}`);
+      const docFilePath = path.resolve(prefixPath, docFileName);
+      fs.writeFileSync(docFilePath, render(val.data));
+    }
+  }
+}

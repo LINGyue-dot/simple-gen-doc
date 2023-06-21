@@ -4,8 +4,8 @@
 ## Properties:
 ### color:string
 ## Methods:
-### setColor(color:string  : void)
-### getName(  : void)
-### setName(name:string  : void)
+### setColor(color:string )  : void
+### getName( )  : void
+### setName(name:string )  : void
 
 

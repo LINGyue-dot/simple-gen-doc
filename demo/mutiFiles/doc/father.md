@@ -5,6 +5,6 @@
 ### name:string
 ### age:number
 ## Methods:
-### setName(name:string  : void)
+### setName(name:string )  : void
 
 
