@@ -1,4 +1,4 @@
-const { getFileName, getFileExtension } = require("./utils");
+const { getFileName, getFileExtension, consoleInfo } = require("./utils");
 const path = require("path");
 const { SupportExtensions } = require("./config");
 
@@ -6,7 +6,7 @@ const otherTree = {};
 const specialTree = {};
 const externalTree = {};
 
-function genFileObject(node, file, filePath) {
+function genFileObject(node, file, filePath, isExternal) {
   if (node[file]) {
     return node[file];
   } else {
@@ -16,12 +16,13 @@ function genFileObject(node, file, filePath) {
       absolutePath: filePath,
       extension: getFileExtension(file),
       data: [],
+      external: isExternal,
     });
   }
 }
 
 // 第一次生成 tree 之后需要执行的函数
-const callbacks = [];
+let callbacks = [];
 
 /**
  * TODO: reduce args
@@ -51,7 +52,6 @@ function genImportCallback(importObj, superClassName, classInfo, fileNode) {
           importPath + "" + extension
         )
       );
-      console.log(absolutePaths);
 
       let superClassInfo,
         idx = 0;
@@ -83,6 +83,7 @@ function genImportCallback(importObj, superClassName, classInfo, fileNode) {
 
 function execCallbacks() {
   callbacks.forEach((fn) => fn());
+  callbacks = [];
 }
 
 // TODO short function name how to short ?
@@ -104,9 +105,10 @@ function findFileNodeByAbsolutePathAndName(absolutePath, className, tree) {
 // 必须是一层，而且只能是一层
 // TODO add support deep search
 function findFileNodeInExternal(importPath, superClassName) {
+  console.log(importPath);
+  consoleInfo(externalTree);
   const node = externalTree[importPath];
-  const children = node.children;
-  for (let [key, val] of children) {
+  for (let [key, val] of Object.entries(node.children)) {
     const res = val.data.find((item) => item.name === superClassName);
     if (res) return res;
   }

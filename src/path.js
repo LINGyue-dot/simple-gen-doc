@@ -1,4 +1,5 @@
 const fs = require("fs");
+const { dirPath } = require("./config");
 
 function mkdirIfNotExist(dirPath) {
   if (!fs.existsSync(dirPath)) {
@@ -19,7 +20,12 @@ async function isDir(dirPath) {
   });
 }
 
+function getRelativePath(absolutePath) {
+  return absolutePath.replace(dirPath, "");
+}
+
 module.exports = {
   mkdirIfNotExist,
   isDir,
+  getRelativePath,
 };

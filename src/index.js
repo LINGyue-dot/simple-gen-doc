@@ -7,12 +7,10 @@ const {
   resolveType,
   parseComment,
   consoleInfo,
-  getFileExtension,
   isClassIgnore,
   isClassSpecial,
-  getFileName,
 } = require("./utils");
-const render = require("./render");
+const render = require("./render/index.js");
 
 const { isDir } = require("./path");
 const {
@@ -23,20 +21,15 @@ const {
   genImportCallback,
   execCallbacks,
 } = require("./store");
-const { importDeclaration } = require("@babel/types");
-
-const dir = "../example";
-const dirPath = path.resolve(__dirname, dir);
-
-const externalDir = "../_external";
-const externalDirPath = path.resolve(__dirname, externalDir);
-
-const docDir = "../vitepress/doc";
-const absoluteDocDir = path.resolve(__dirname, "../vitepress/doc");
-const otherDocPath = path.resolve(__dirname, docDir, "other");
-const specialDocPath = path.resolve(__dirname, docDir, "special");
-const externalDocPath = path.resolve(__dirname, docDir, "external");
-const DocExtension = "md";
+const {
+  dirPath,
+  externalDirPath,
+  externalDocPath,
+  specialDocPath,
+  absoluteDocDir,
+  otherDocPath,
+  DocExtension,
+} = require("./config");
 
 /**
  * 1. 第一次解析先将对象全部都解析出来，区分 special other external
@@ -49,10 +42,10 @@ const DocExtension = "md";
  */
 Promise.all([
   resolveDir(dirPath, otherTree),
-  resolveDir(externalDirPath, externalTree),
+  resolveDir(externalDirPath, externalTree, true),
 ]).then(() => {
   execCallbacks();
-  consoleInfo(specialTree);
+  // consoleInfo(specialTree);
   // consoleInfo(otherTree);
   // consoleInfo(externalTree);
   fs.emptyDirSync(absoluteDocDir);
@@ -62,7 +55,7 @@ Promise.all([
   genDoc(externalTree, externalDocPath);
 });
 
-async function resolveDir(dirPath, fatherNode) {
+async function resolveDir(dirPath, fatherNode, isExternal) {
   const files = fs.readdirSync(dirPath);
   await Promise.all(
     files
@@ -71,13 +64,15 @@ async function resolveDir(dirPath, fatherNode) {
           const filePath = path.resolve(dirPath, file);
           if (await isDir(filePath)) {
             fatherNode[file] = {
+              name: file,
               isDir: true,
               absolutePath: filePath,
               children: {},
+              external: isExternal,
             };
-            await resolveDir(filePath, fatherNode[file].children);
+            await resolveDir(filePath, fatherNode[file].children, isExternal);
           } else {
-            await resolveFile(fatherNode, file, filePath);
+            await resolveFile(fatherNode, file, filePath, isExternal);
           }
         };
       })
@@ -85,7 +80,7 @@ async function resolveDir(dirPath, fatherNode) {
   );
 }
 
-async function resolveFile(fatherNode, file, filePath) {
+async function resolveFile(fatherNode, file, filePath, isExternal) {
   const sourceCode = fs.readFileSync(filePath).toString();
 
   const ast = parser.parse(sourceCode, {
@@ -115,9 +110,11 @@ async function resolveFile(fatherNode, file, filePath) {
       const fileNode = genFileObject(
         isSpecial ? specialTree : fatherNode,
         file,
-        filePath
+        filePath,
+        isExternal
       );
       classInfo.special = isSpecial;
+      classInfo.parentNode = fileNode;
       fileNode.data.push(classInfo);
 
       // resolve super class
@@ -196,8 +193,8 @@ function ensureDir() {
   fs.ensureDirSync(externalDocPath);
 }
 
-function genDoc(otherTree, prefixPath) {
-  for (const [key, val] of Object.entries(otherTree)) {
+function genDoc(tree, prefixPath) {
+  for (const [key, val] of Object.entries(tree)) {
     if (val.isDir) {
       const docDirPath = path.resolve(prefixPath, key);
       fs.ensureDirSync(docDirPath);

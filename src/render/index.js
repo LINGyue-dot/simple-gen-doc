@@ -1,3 +1,8 @@
+const { getRelativePath } = require("../path");
+const path = require("path");
+const { docDirName, DocExtension } = require("../config");
+const { consoleInfo } = require("../utils");
+
 module.exports = function (docs) {
   let str = "";
 
@@ -41,7 +46,7 @@ module.exports = function (docs) {
         }
       }
 
-      str += genSuperClassDesStr(doc.superClass);
+      str += genSuperClassDesStr(doc);
 
       str += "> new " + doc.name + "(";
       if (doc.constructorInfo.params) {
@@ -76,16 +81,33 @@ module.exports = function (docs) {
   return str;
 };
 
-function genSuperClassDesStr(superClass) {
-  if (!superClass) {
+function genSuperClassDesStr(classInfo) {
+  if (!classInfo.superClass) {
     return "\n";
   }
-  return `该类继承于 ${superClass.name} \n`;
-  const link = "ss";
-
-  const str = `该类继承于 ${genLinkStr()} \n`;
+  return `该类继承于 ${genLinkStr(classInfo)} \n`;
 }
 
-function genLinkStr(title, url) {
-  return `[${title}](${url}) \n`;
+function genLinkStr(classInfo) {
+  if (!classInfo.superClassInfo) {
+    return classInfo.superClass.name;
+  }
+  const superClassInfo = classInfo.superClassInfo;
+  let url = "/doc";
+  const fileName = superClassInfo.name + "." + DocExtension;
+  if (superClassInfo.special) {
+    url += "/special/" + fileName;
+  } else if (superClassInfo.parentNode.external) {
+    // TODO to edit
+    url += "/external/" + superClassInfo.parentNode.name + "/" + fileName;
+  } else {
+    url +=
+      "/other" +
+      getRelativePath(path.dirname(superClassInfo.parentNode.absolutePath)) +
+      "/" +
+      superClassInfo.parentNode.name +
+      "." +
+      DocExtension;
+  }
+  return `[${classInfo.superClassInfo.name}](${url})`;
 }
