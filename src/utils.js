@@ -40,7 +40,7 @@ function consoleInfo(obj) {
 function getFileExtension(fileName) {
   if (!fileName) return "";
   if (fileName.endsWith(".d.ts")) {
-    return ".d.ts";
+    return "d.ts";
   }
   var ext = (/[^./\\]*$/.exec(fileName) || [""])[0];
   return ext.toLowerCase();
@@ -51,7 +51,7 @@ function getFileExtension(fileName) {
  * @param {*} fileName
  */
 function getFileName(fileName) {
-  return path.basename(fileName, "." + getFileExtension(fileName));
+  return fileName.replace("." + getFileExtension(fileName), "");
 }
 
 function isClassIgnore(leadingComments) {
@@ -69,9 +69,7 @@ function isClassSpecial(leadingComments) {
   return comments.tags.some((tag) => tag.title === "special");
 }
 
-function resolveSuperClass(){
-  
-}
+function resolveSuperClass() {}
 
 module.exports = {
   resolveType,

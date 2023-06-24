@@ -1,5 +1,5 @@
 const path = require("path");
-const SupportExtensions = [".d.ts", ".ts", ".js"];
+const SupportExtensions = ["d.ts", "ts", "js"];
 
 const dir = "../example";
 const dirPath = path.resolve(__dirname, dir);

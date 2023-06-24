@@ -6,19 +6,30 @@ const otherTree = {};
 const specialTree = {};
 const externalTree = {};
 
+/**
+ * 以文件名为维度
+ */
 function genFileObject(node, file, filePath, isExternal) {
-  if (node[file]) {
-    return node[file];
-  } else {
-    return (node[file] = {
-      name: getFileName(file),
-      isDir: false,
-      absolutePath: filePath,
-      extension: getFileExtension(file),
-      data: [],
-      external: isExternal,
-    });
+  const name = getFileName(file);
+  const extension = getFileExtension(file);
+  if (!node[name]) {
+    node[name] = [];
   }
+  const fileObj = node[name].find((i) => i.extension === extension);
+  if (fileObj) {
+    return fileObj;
+  }
+
+  const obj = {
+    name,
+    isDir: false,
+    absolutePath: filePath,
+    extension: extension,
+    data: [],
+    external: isExternal,
+  };
+  node[name].push(obj);
+  return obj;
 }
 
 // 第一次生成 tree 之后需要执行的函数
@@ -36,7 +47,7 @@ function genImportCallback(importObj, superClassName, classInfo, fileNode) {
     const importPath = importObj[superClassName];
     // 3
     if (!importPath) {
-      fatherNode.data.forEach((item) => {
+      fileNode.data.forEach((item) => {
         if (item.name === superClassName) {
           classInfo.superClassInfo = item;
         }
@@ -49,7 +60,7 @@ function genImportCallback(importObj, superClassName, classInfo, fileNode) {
       const absolutePaths = SupportExtensions.map((extension) =>
         path.resolve(
           path.dirname(fileNode.absolutePath),
-          importPath + "" + extension
+          importPath + "." + extension
         )
       );
 
@@ -57,12 +68,12 @@ function genImportCallback(importObj, superClassName, classInfo, fileNode) {
         idx = 0;
       do {
         superClassInfo =
-          findFileNodeByAbsolutePathAndName(
+          findClassInfoByAbsolutePathAndName(
             absolutePaths[idx],
             superClassName,
             specialTree
           ) ||
-          findFileNodeByAbsolutePathAndName(
+          findClassInfoByAbsolutePathAndName(
             absolutePaths[idx],
             superClassName,
             otherTree
@@ -72,7 +83,7 @@ function genImportCallback(importObj, superClassName, classInfo, fileNode) {
       classInfo.superClassInfo = superClassInfo;
     } else {
       // 2
-      classInfo.superClassInfo = findFileNodeInExternal(
+      classInfo.superClassInfo = findClassInfoInExternal(
         importPath,
         superClassName
       );
@@ -87,29 +98,29 @@ function execCallbacks() {
 }
 
 // TODO short function name how to short ?
-function findFileNodeByAbsolutePathAndName(absolutePath, className, tree) {
+function findClassInfoByAbsolutePathAndName(absolutePath, className, tree) {
   for (let [key, val] of Object.entries(tree)) {
     if (val.isDir) {
-      return findFileNodeByAbsolutePathAndName(
+      return findClassInfoByAbsolutePathAndName(
         absolutePath,
         className,
         val.children
       );
     }
-    if (val.absolutePath === absolutePath) {
-      return val.data.find((item) => item.name === className);
+    let target;
+    if ((target = val.find((item) => item.absolutePath === absolutePath))) {
+      return target.data.find((item) => item.name === className);
     }
   }
 }
 
 // 必须是一层，而且只能是一层
 // TODO add support deep search
-function findFileNodeInExternal(importPath, superClassName) {
-  console.log(importPath);
-  consoleInfo(externalTree);
+function findClassInfoInExternal(importPath, superClassName) {
   const node = externalTree[importPath];
   for (let [key, val] of Object.entries(node.children)) {
-    const res = val.data.find((item) => item.name === superClassName);
+    // TODO support external dir .d.ts .ts .js muti type 
+    const res = val[0].data.find((item) => item.name === superClassName);
     if (res) return res;
   }
 }

@@ -1,13 +1,10 @@
-# Son 儿子特殊类 
+# Son 测试儿子 
 special: 你好哇 
 warning:  
-该类继承于 [Father](/doc/other/father.md) 
-> new Son(name: string, color: string)
+该类继承于 Father 
+> new Son()
 ## Properties:
 ### color:string 
 ## Methods:
-### setColor(color:string )  : void
-### getName( )  : void
-### setName(name:string )  : void
 
 

@@ -5,13 +5,13 @@ import Father from "./father";
  * @special 你好哇
  * @warning
  */
-class Son extends Father {
+export class Son extends Father {
   /**
    * 颜色
    */
-  color: string;
+  color;
 
-  constructor(name: string, color: string) {
+  constructor(name, color) {
     super(name);
     this.color = color;
   }
@@ -19,7 +19,7 @@ class Son extends Father {
    * 设置颜色
    * @param color
    */
-  setColor(color: string) {
+  setColor(color) {
     this.color = color;
   }
 
@@ -36,10 +36,8 @@ class Son extends Father {
    * @param name
    * TODO: 这里能自动推断出 returnType 吗？
    */
-  setName(name: string) {
+  setName(name) {
     this.name = name;
     return this.name;
   }
 }
-
-module.exports = Son;
