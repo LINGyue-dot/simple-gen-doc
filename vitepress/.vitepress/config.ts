@@ -6,6 +6,9 @@ export default defineConfig({
   title: "auto-gen-doc",
   description: "解析文档注释生成文档",
   themeConfig: {
+    search: {
+      provider: "local",
+    },
     // https://vitepress.dev/reference/default-theme-config
     nav: [
       { text: "Home", link: "/" },
@@ -21,7 +24,7 @@ export default defineConfig({
         ],
       },
       ...getSidebar({
-        contentRoot: "/",
+        contentRoot: "/vitepress",
         contentDirs: ["doc"],
         collapsible: false,
         collapsed: false,

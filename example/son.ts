@@ -1,5 +1,10 @@
 import Father from "./father";
 
+/**
+ * 儿子特殊类
+ * @special 你好哇
+ * @warning
+ */
 class Son extends Father {
   /**
    * 颜色
@@ -36,3 +41,5 @@ class Son extends Father {
     return this.name;
   }
 }
+
+module.exports = Son;

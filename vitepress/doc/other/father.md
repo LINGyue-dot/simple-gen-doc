@@ -2,8 +2,8 @@
 
 > new Father(name: string)
 ## Properties:
-### name:string
-### age:number
+### name:string 
+### age:number 
 ## Methods:
 ### setName(name:string )  : void
 

@@ -1,8 +1,3 @@
-/**
- * fork from guang
- * @param {*} docs
- * @returns
- */
 module.exports = function (docs) {
   let str = "";
 
@@ -37,14 +32,16 @@ module.exports = function (docs) {
       str += `# ${doc.name} ${doc.doc ? doc.doc.description : ""} \n`;
 
       if (doc.doc) {
+        // TODO markdown extension
+        // https://vitepress.dev/guide/markdown
         if (doc.doc.tags) {
           doc.doc.tags.forEach((tag) => {
-            str += tag.name + ": " + tag.description + "\n";
+            str += tag.title + ": " + (tag.description || "") + " \n";
           });
         }
       }
 
-      str += (doc.superClass ? "该类继承于 " + doc.superClass.name : "") + "\n";
+      str += genSuperClassDesStr(doc.superClass);
 
       str += "> new " + doc.name + "(";
       if (doc.constructorInfo.params) {
@@ -58,7 +55,7 @@ module.exports = function (docs) {
       str += "## Properties:\n";
       if (doc.propertiesInfo) {
         doc.propertiesInfo.forEach((param) => {
-          str += "### " + param.name + ":" + param.type + "\n";
+          str += "### " + param.name + ":" + param.type + " \n";
         });
       }
       str += "## Methods:\n";
@@ -78,3 +75,17 @@ module.exports = function (docs) {
   });
   return str;
 };
+
+function genSuperClassDesStr(superClass) {
+  if (!superClass) {
+    return "\n";
+  }
+  return `该类继承于 ${superClass.name} \n`;
+  const link = "ss";
+
+  const str = `该类继承于 ${genLinkStr()} \n`;
+}
+
+function genLinkStr(title, url) {
+  return `[${title}](${url}) \n`;
+}
