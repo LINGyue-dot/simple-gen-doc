@@ -5,6 +5,7 @@ import { getSidebar } from "vitepress-plugin-auto-sidebar";
 export default defineConfig({
   title: "auto-gen-doc",
   description: "解析文档注释生成文档",
+  base: "https://hello.com",
   themeConfig: {
     search: {
       provider: "local",
@@ -23,12 +24,12 @@ export default defineConfig({
           { text: "Examples", link: "/markdown-examples" },
         ],
       },
-      ...getSidebar({
-        contentRoot: "/vitepress",
-        contentDirs: ["doc"],
-        collapsible: false,
-        collapsed: false,
-      }),
+      // ...getSidebar({
+      //   contentRoot: "/vitepress",
+      //   contentDirs: ["doc"],
+      //   collapsible: false,
+      //   collapsed: false,
+      // }),
     ],
   },
 });

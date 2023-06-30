@@ -16,11 +16,11 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "baseUrl": ".",
-    "suppressImplicitAnyIndexErrors": true,
+    // "suppressImplicitAnyIndexErrors": true,
     "noImplicitAny": false,
     "strictPropertyInitialization": false,
     "downlevelIteration": true
   },
-  "include": ["src"],
+  "include": ["src","example"],
   "exclude": ["demo/**/*"]
 }

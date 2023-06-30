@@ -1,8 +1,8 @@
-import { Grand } from "grand";
+// import { Grand } from "grand";
 /**
  * Middle 类型
  */
-class Middle extends Grand {
+class Middle {
   /**
    * Middle
    * @description 这是 Middle
